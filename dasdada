@@ -1,13 +1,14 @@
+-- VEXON HUB - ULTIMATE BLOX FRUITS SCRIPT
+-- Completely restructured and enhanced with unique features
 
-
-
+-- World Detection System
 local VexonWorld = {
     First = game.PlaceId == 2753915549 or game.PlaceId == 85211729168715,
     Second = game.PlaceId == 4442272183 or game.PlaceId == 79091703265657,
     Third = game.PlaceId == 7449423635 or game.PlaceId == 100117331123089
 }
 
-
+-- VexonHub Configuration System
 getgenv().VexonConfig = getgenv().VexonConfig or {
     VisualEffects = true,
     PerformanceMode = false,
@@ -20,6 +21,12 @@ getgenv().VexonConfig = getgenv().VexonConfig or {
         FastMode = Enum.KeyCode.LeftShift,
         EmergencyStop = Enum.KeyCode.X
     }
+}
+
+-- VexonHub Settings (for UI configuration)
+getgenv().VexonHubSettings = getgenv().VexonHubSettings or {
+    TransparencyEnabled = false,
+    Theme = "Dark"
 }
 
 -- Global Variables (Renamed for uniqueness)
