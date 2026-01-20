@@ -302,23 +302,23 @@ end
 -- Create tabs if UI loaded
 local Tabs = {}
 if uiLoaded then
-    Tabs.Farming = Window:Tab({Title = "Farming", Icon = "tractor", Desc = "Auto Farm & Leveling"})
-    Tabs.Material = Window:Tab({Title = "Materials", Icon = "package", Desc = "Auto Farm Materials"})
-    Tabs.Raid = Window:Tab({Title = "Raid", Icon = "swords", Desc = "Fruit Raids & Awakening"})
-    Tabs.Quest = Window:Tab({Title = "Quest", Icon = "scroll", Desc = "Auto Quests & Items"})
-    Tabs.Teleport = Window:Tab({Title = "Teleport", Icon = "map-pin", Desc = "Teleport Locations"})
-    Tabs.ESP = Window:Tab({Title = "ESP", Icon = "eye", Desc = "Visual Features"})
-    Tabs.Misc = Window:Tab({Title = "Misc", Icon = "settings", Desc = "Other Features"})
-    Tabs.Boss = Window:Tab({Title = "Boss", Icon = "skull", Desc = "Auto Boss Farming"})
-    Tabs.Fighting = Window:Tab({Title = "Combat", Icon = "fist", Desc = "Combat & PvP Features"})
-    Tabs.DevilFruit = Window:Tab({Title = "Devil Fruit", Icon = "apple", Desc = "Fruit Features"})
-    Tabs.Stats = Window:Tab({Title = "Stats", Icon = "trending-up", Desc = "Auto Stats Upgrades"})
-    Tabs.Dungeon = Window:Tab({Title = "Dungeon", Icon = "castle", Desc = "Auto Dungeon"})
-    Tabs.Island = Window:Tab({Title = "Island", Icon = "map", Desc = "Island Features"})
-    Tabs.SeaEvents = Window:Tab({Title = "Sea Events", Icon = "waves", Desc = "Sea Event Farming"})
-    Tabs.Mastery = Window:Tab({Title = "Mastery", Icon = "star", Desc = "Mastery Farming"})
-    Tabs.AdvancedBoss = Window:Tab({Title = "Advanced Boss", Icon = "crown", Desc = "Elite Boss Farming"})
-    Tabs.Settings = Window:Tab({Title = "Settings", Icon = "cog", Desc = "UI Settings"})
+    Tabs.Farming = Window:CreateTab({Title = "Farming", Icon = "tractor", Desc = "Auto Farm & Leveling"})
+    Tabs.Material = Window:CreateTab({Title = "Materials", Icon = "package", Desc = "Auto Farm Materials"})
+    Tabs.Raid = Window:CreateTab({Title = "Raid", Icon = "swords", Desc = "Fruit Raids & Awakening"})
+    Tabs.Quest = Window:CreateTab({Title = "Quest", Icon = "scroll", Desc = "Auto Quests & Items"})
+    Tabs.Teleport = Window:CreateTab({Title = "Teleport", Icon = "map-pin", Desc = "Teleport Locations"})
+    Tabs.ESP = Window:CreateTab({Title = "ESP", Icon = "eye", Desc = "Visual Features"})
+    Tabs.Misc = Window:CreateTab({Title = "Misc", Icon = "settings", Desc = "Other Features"})
+    Tabs.Boss = Window:CreateTab({Title = "Boss", Icon = "skull", Desc = "Auto Boss Farming"})
+    Tabs.Fighting = Window:CreateTab({Title = "Combat", Icon = "fist", Desc = "Combat & PvP Features"})
+    Tabs.DevilFruit = Window:CreateTab({Title = "Devil Fruit", Icon = "apple", Desc = "Fruit Features"})
+    Tabs.Stats = Window:CreateTab({Title = "Stats", Icon = "trending-up", Desc = "Auto Stats Upgrades"})
+    Tabs.Dungeon = Window:CreateTab({Title = "Dungeon", Icon = "castle", Desc = "Auto Dungeon"})
+    Tabs.Island = Window:CreateTab({Title = "Island", Icon = "map", Desc = "Island Features"})
+    Tabs.SeaEvents = Window:CreateTab({Title = "Sea Events", Icon = "waves", Desc = "Sea Event Farming"})
+    Tabs.Mastery = Window:CreateTab({Title = "Mastery", Icon = "star", Desc = "Mastery Farming"})
+    Tabs.AdvancedBoss = Window:CreateTab({Title = "Advanced Boss", Icon = "crown", Desc = "Elite Boss Farming"})
+    Tabs.Settings = Window:CreateTab({Title = "Settings", Icon = "cog", Desc = "UI Settings"})
     
     print("All tabs created successfully")
 end
@@ -1318,85 +1318,47 @@ if uiLoaded then
             Desc = "Automatically start raid with selected chip",
             Value = false,
             Callback = function(state)
-                _G.AutoStartRaid = state
+                _G.StartRaid = state
+                if state then
+                    sendNotification("VexonHub", "Auto Start Raid Enabled", 2, "play")
+                    spawn(autoStartRaid)
+                else
+                    sendNotification("VexonHub", "Auto Start Raid Disabled", 2, "stop")
+                end
             end
         })
-    
-    -- Raid Tab
-    Tabs.Raid = Window:Tab({Title = "Raid", Icon = "swords", Desc = "Fruit Raids & Awakening"})
-    Tabs.Raid:Section({ Title = "Raid Settings", Icon = "cog" })
 
-    local raidChips = {"Flame","Ice","Sand","Dark","Light","Magma","Quake","Buddha","Spider","Phoenix","Rumble","Dough"}
-    Tabs.Raid:Dropdown({
-        Title = "Select Raid Chip",
-        Desc = "Choose raid chip type",
-        Values = raidChips,
-        Callback = function(value)
-            _G.SelectChip = value
-            sendNotification("VexonHub", "Selected Raid Chip: " .. value, 2, "swords")
-        end
-    })
-
-    Tabs.Raid:Toggle({
-        Title = "Auto Buy Chip",
-        Desc = "Automatically buy selected raid chip",
-        Value = false,
-        Callback = function(state)
-            _G.AutoBuyChip = state
-            if state then
-                sendNotification("VexonHub", "Auto Buy Chip Enabled", 2, "shopping-cart")
-            else
-                sendNotification("VexonHub", "Auto Buy Chip Disabled", 2, "x")
+        Tabs.Raid:Toggle({
+            Title = "Auto Farm Raid",
+            Desc = "Automatically farm raid enemies",
+            Value = false,
+            Callback = function(state)
+                _G.Dungeon = state
+                if state then
+                    sendNotification("VexonHub", "Auto Farm Raid Enabled", 2, "sword")
+                    spawn(autoRaidFarm)
+                else
+                    sendNotification("VexonHub", "Auto Farm Raid Disabled", 2, "stop")
+                end
             end
-        end
-    })
+        })
 
-    Tabs.Raid:Toggle({
-        Title = "Auto Start Raid",
-        Desc = "Automatically start raid when chip is available",
-        Value = false,
-        Callback = function(state)
-            _G.StartRaid = state
-            if state then
-                sendNotification("VexonHub", "Auto Start Raid Enabled", 2, "play")
-                spawn(autoStartRaid)
-            else
-                sendNotification("VexonHub", "Auto Start Raid Disabled", 2, "stop")
+        Tabs.Raid:Toggle({
+            Title = "Awakener Fruit",
+            Desc = "Automatically awaken fruits",
+            Value = false,
+            Callback = function(state)
+                AutoAwakenAbilities = state
+                if state then
+                    sendNotification("VexonHub", "Auto Fruit Awakening Enabled", 2, "zap")
+                else
+                    sendNotification("VexonHub", "Auto Fruit Awakening Disabled", 2, "x")
+                end
             end
-        end
-    })
-
-    Tabs.Raid:Toggle({
-        Title = "Auto Farm Raid",
-        Desc = "Automatically farm raid enemies",
-        Value = false,
-        Callback = function(state)
-            _G.Dungeon = state
-            if state then
-                sendNotification("VexonHub", "Auto Farm Raid Enabled", 2, "sword")
-                spawn(autoRaidFarm)
-            else
-                sendNotification("VexonHub", "Auto Farm Raid Disabled", 2, "stop")
-            end
-        end
-    })
-
-    Tabs.Raid:Toggle({
-        Title = "Awakener Fruit",
-        Desc = "Automatically awaken fruits",
-        Value = false,
-        Callback = function(state)
-            AutoAwakenAbilities = state
-            if state then
-                sendNotification("VexonHub", "Auto Fruit Awakening Enabled", 2, "zap")
-            else
-                sendNotification("VexonHub", "Auto Fruit Awakening Disabled", 2, "x")
-            end
-        end
-    })
+        })
 
     -- Shop Tab
-    Tabs.Shop = Window:Tab({Title = "Shop", Icon = "shopping-bag", Desc = "Auto Buy Items"})
+    Tabs.Shop = Window:CreateTab({Title = "Shop", Icon = "shopping-bag", Desc = "Auto Buy Items"})
     Tabs.Shop:Section({ Title = "Abilities", Icon = "zap" })
 
     Tabs.Shop:Toggle({
@@ -1518,7 +1480,7 @@ if uiLoaded then
     })
 
     -- Fruit Management Tab
-    Tabs.Fruit = Window:Tab({Title = "Fruit", Icon = "apple", Desc = "Fruit Management"})
+    Tabs.Fruit = Window:CreateTab({Title = "Fruit", Icon = "apple", Desc = "Fruit Management"})
     Tabs.Fruit:Section({ Title = "Fruit Storage", Icon = "package" })
 
     Tabs.Fruit:Toggle({
@@ -1591,7 +1553,7 @@ if uiLoaded then
     })
 
     -- Stats Tab
-    Tabs.Stats = Window:Tab({Title = "Stats", Icon = "trending-up", Desc = "Auto Stats Upgrades"})
+    Tabs.Stats = Window:CreateTab({Title = "Stats", Icon = "trending-up", Desc = "Auto Stats Upgrades"})
     Tabs.Stats:Section({ Title = "Auto Stats", Icon = "bar-chart" })
 
     Tabs.Stats:Toggle({
@@ -1676,7 +1638,7 @@ if uiLoaded then
     })
 
     -- Misc Tab
-    Tabs.Misc = Window:Tab({Title = "Misc", Icon = "settings", Desc = "Miscellaneous Features"})
+    Tabs.Misc = Window:CreateTab({Title = "Misc", Icon = "settings", Desc = "Miscellaneous Features"})
     Tabs.Misc:Section({ Title = "Codes", Icon = "ticket" })
 
     local x2Code = {
@@ -3454,6 +3416,36 @@ function autoStatsLoop()
     end
 end
 
+-- Auto Start Raid Function
+function autoStartRaid()
+    while _G.StartRaid and task.wait() do
+        pcall(function()
+            if _G.SelectRaid and _G.SelectRaid ~= "" then
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("BuyChip", _G.SelectRaid)
+                wait(1)
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("ActivateChip")
+            end
+        end)
+    end
+end
+
+-- Auto Raid Farm Function  
+function autoRaidFarm()
+    while _G.Dungeon and task.wait() do
+        pcall(function()
+            for _, enemy in pairs(game.Workspace.Enemies:GetChildren()) do
+                if enemy:FindFirstChild("Humanoid") and enemy:FindFirstChild("HumanoidRootPart") and enemy.Humanoid.Health > 0 then
+                    topos(enemy.HumanoidRootPart.CFrame * CFrame.new(0, 30, 5))
+                    enemy.HumanoidRootPart.CanCollide = false
+                    enemy.Humanoid.WalkSpeed = 0
+                    game:GetService("VirtualUser"):CaptureController()
+                    game:GetService("VirtualUser"):Button1Down(Vector2.new(1280, 672))
+                end
+            end
+        end)
+    end
+end
+
 -- Anti AFK
 local VirtualUser = game:GetService('VirtualUser')
 game:GetService('Players').LocalPlayer.Idled:Connect(function()
@@ -3535,8 +3527,8 @@ end)
 -- Auto Observation Loop
 spawn(function()
     while task.wait(2) do
-        if _G.VexonAutoObservation then
-            VexonAutoObservation()
+        if _G.VexonAutoObservationHaki then
+            VexonAutoObservationHaki()
         end
     end
 end)
