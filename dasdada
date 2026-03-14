@@ -1179,7 +1179,8 @@ local function sendMessage(text)
 	-- Broadcast to relay server
 	task.spawn(function()
 		pcall(function()
-			HttpService:RequestAsync({
+			local reqFunc = syn and syn.request or http and http.request or request
+			reqFunc({
 				Url     = RELAY_URL .. "/api/send",
 				Method  = "POST",
 				Headers = { ["Content-Type"] = "application/json" },
@@ -1198,28 +1199,24 @@ task.spawn(function()
 	while true do
 		task.wait(POLL_INTERVAL)
 		pcall(function()
-			local response = HttpService:RequestAsync({
-				Url    = RELAY_URL .. "/api/poll?after=" .. lastSeenId,
-				Method = "GET",
-			})
-			if response.Success then
-				local data = HttpService:JSONDecode(response.Body)
-				if data then
-					for _, msg in ipairs(data) do
-						if msg.id > lastSeenId then
-							lastSeenId = msg.id
-							if msg.username ~= LocalPlayer.Name then
-								local isPrem  = whitelistedUsers[msg.username:lower()]
-								local roleTag = isPrem
-									and '<font color="#FFD700"><b>[vexonhub-premium]</b></font> '
-									or  '<font color="#aaaaaa">[User]</font> '
-								addMessage({
-									type     = "relay",
-									roleTag  = roleTag,
-									username = msg.username,
-									text     = msg.text,
-								})
-							end
+			local url  = RELAY_URL .. "/api/poll?after=" .. lastSeenId
+			local response = game:HttpGet(url, true)
+			local data = HttpService:JSONDecode(response)
+			if data then
+				for _, msg in ipairs(data) do
+					if msg.id > lastSeenId then
+						lastSeenId = msg.id
+						if msg.username ~= LocalPlayer.Name then
+							local isPrem  = whitelistedUsers[msg.username:lower()]
+							local roleTag = isPrem
+								and '<font color="#FFD700"><b>[vexonhub-premium]</b></font> '
+								or  '<font color="#aaaaaa">[User]</font> '
+							addMessage({
+								type     = "relay",
+								roleTag  = roleTag,
+								username = msg.username,
+								text     = msg.text,
+							})
 						end
 					end
 				end
