@@ -238,7 +238,7 @@ ScrollFrame.BackgroundColor3           = Color3.fromRGB(0, 0, 0)
 ScrollFrame.BackgroundTransparency     = 1 - CONFIG.BackgroundAlpha
 ScrollFrame.BorderSizePixel            = 0
 ScrollFrame.CanvasSize                 = UDim2.new(0, 0, 0, 0)
-ScrollFrame.AutomaticCanvasSize        = Enum.AutomaticSize.Y
+ScrollFrame.AutomaticCanvasSize        = Enum.AutomaticSize.None
 ScrollFrame.ScrollBarThickness         = 4
 ScrollFrame.ScrollBarImageColor3       = Color3.fromRGB(255, 255, 255)
 ScrollFrame.ScrollBarImageTransparency = 0.6
@@ -307,7 +307,12 @@ local function setChatOpen(open)
 		NotifDot.BackgroundTransparency = 1
 		isChatVisible = true
 		lastActivityTime = tick()
-		task.defer(function() ScrollFrame.CanvasPosition = Vector2.new(0, math.huge) end)
+		task.spawn(function()
+			task.wait()
+			ScrollFrame.CanvasPosition = Vector2.new(0, math.huge)
+			task.wait(0.05)
+			ScrollFrame.CanvasPosition = Vector2.new(0, math.huge)
+		end)
 	else
 		TweenService:Create(ChatToggleBtn, TweenInfo.new(0.15), {
 			BackgroundColor3       = Color3.fromRGB(10, 10, 20),
@@ -351,8 +356,26 @@ ChatToggleBtn.MouseButton1Up:Connect(function()
 	}):Play()
 end)
 
+local TextService = game:GetService("TextService")
+
+local function getTextHeight(text, fontSize, width)
+	local ok, size = pcall(function()
+		return TextService:GetTextSize(text, fontSize, Enum.Font.Gotham, Vector2.new(width - 22, math.huge))
+	end)
+	return ok and size.Y or fontSize + 4
+end
+
+local canvasHeight = 0
+
 local function scrollToBottom()
-	task.defer(function() ScrollFrame.CanvasPosition = Vector2.new(0, math.huge) end)
+	ScrollFrame.CanvasSize     = UDim2.new(0, 0, 0, canvasHeight)
+	ScrollFrame.CanvasPosition = Vector2.new(0, canvasHeight)
+	task.spawn(function()
+		for i = 1, 10 do
+			task.wait(0.02)
+			ScrollFrame.CanvasPosition = Vector2.new(0, canvasHeight)
+		end
+	end)
 end
 
 local function removeOldMessages()
@@ -376,15 +399,11 @@ local function addMessage(data)
 
 	local row = Instance.new("Frame")
 	row.Name                   = "MsgRow"
-	row.Size                   = UDim2.new(1, 0, 0, 0)
-	row.AutomaticSize          = Enum.AutomaticSize.Y
 	row.BackgroundTransparency = 1
 	row.LayoutOrder            = messageCount
 	row.Parent                 = ScrollFrame
 
 	local label = Instance.new("TextLabel")
-	label.Size                   = UDim2.new(1, 0, 0, 0)
-	label.AutomaticSize          = Enum.AutomaticSize.Y
 	label.BackgroundColor3       = Color3.fromRGB(0, 0, 0)
 	label.BackgroundTransparency = 0.45
 	label.TextColor3             = Color3.fromRGB(255, 255, 255)
@@ -446,6 +465,16 @@ local function addMessage(data)
 	end
 
 	label.Text = rt
+
+	-- Calculate height from text and apply fixed sizes
+	local rowWidth   = CONFIG.WindowWidth - 12
+	local plainText  = rt:gsub("<[^>]+>", "")
+	local textH      = getTextHeight(plainText, CONFIG.FontSize, rowWidth)
+	local rowH       = textH + 8
+	row.Size         = UDim2.new(1, 0, 0, rowH)
+	label.Size       = UDim2.new(1, 0, 1, 0)
+	canvasHeight     = canvasHeight + rowH + 1
+
 	removeOldMessages()
 	scrollToBottom()
 	lastActivityTime = tick()
