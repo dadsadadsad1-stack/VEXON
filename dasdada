@@ -14,7 +14,7 @@ local Camera      = workspace.CurrentCamera
 local WHITELIST_URL = "https://raw.githubusercontent.com/dadsadadsad1-stack/vexonhub/refs/heads/main/whitelisted_users.txt"
 
 -- 🌐 Global relay
-local RELAY_URL     = "https://2df26b2b-e1b4-4367-8e18-550881cce098-00-3i0bw898iu5m0.worf.replit.dev"
+local RELAY_URL     = "https://vexon-hub-chat-relay--dadsadadsad1.replit.app"
 local RELAY_SECRET  = "vexonhub"  -- must match SECRET in server.js
 local lastSeenId    = 0
 local POLL_INTERVAL = 2.5
@@ -1198,23 +1198,28 @@ task.spawn(function()
 	while true do
 		task.wait(POLL_INTERVAL)
 		pcall(function()
-			local url      = RELAY_URL .. "/api/poll?after=" .. lastSeenId
-			local response = game:HttpGet(url, true)
-			local data     = HttpService:JSONDecode(response)
-			if data then
-				for _, msg in ipairs(data) do
-					if msg.id > lastSeenId then
-						lastSeenId = msg.id
-						if msg.username ~= LocalPlayer.Name then
-							local isPrem    = whitelistedUsers[msg.username:lower()]
-							local roleColor = isPrem and "#FFD700" or "#aaaaaa"
-							local roleTag   = isPrem and '<font color="#FFD700"><b>[vexonhub-premium]</b></font> ' or '<font color="#aaaaaa">[User]</font> '
-							addMessage({
-								type     = "relay",
-								roleTag  = roleTag,
-								username = msg.username,
-								text     = msg.text,
-							})
+			local response = HttpService:RequestAsync({
+				Url    = RELAY_URL .. "/api/poll?after=" .. lastSeenId,
+				Method = "GET",
+			})
+			if response.Success then
+				local data = HttpService:JSONDecode(response.Body)
+				if data then
+					for _, msg in ipairs(data) do
+						if msg.id > lastSeenId then
+							lastSeenId = msg.id
+							if msg.username ~= LocalPlayer.Name then
+								local isPrem  = whitelistedUsers[msg.username:lower()]
+								local roleTag = isPrem
+									and '<font color="#FFD700"><b>[vexonhub-premium]</b></font> '
+									or  '<font color="#aaaaaa">[User]</font> '
+								addMessage({
+									type     = "relay",
+									roleTag  = roleTag,
+									username = msg.username,
+									text     = msg.text,
+								})
+							end
 						end
 					end
 				end
